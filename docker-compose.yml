@@ -1,0 +1,40 @@
+# docker-compose.yml
+version: "2"
+services:
+  web:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    container_name: coco
+    command: gunicorn coco.wsgi:application --bind 0.0.0.0:8000
+    volumes:
+      - ./:/usr/src/app/
+    ports:
+      - "8000:8000"
+    expose:
+      - "8000"
+    depends_on:
+      - db
+  nginx:
+    image: nginx:latest
+    container_name: coco_nginx
+    ports:
+      - "80:80/tcp"
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+      - ./static:/staticfiles
+    depends_on:
+      - web
+  db:
+    image: mariadb:latest
+    container_name: mysql
+    expose:
+      - "3306"
+    environment:
+      MYSQL_DATABASE: coco
+      MYSQL_USER: yewon
+      MYSQL_PASSWORD: 1234
+      MYSQL_ROOT_PASSWORD: 1234
+    volumes:
+      - ../db/data:/var/lib/mysql
+      - ../db/data/conf.d:/etc/mysql/conf.d
